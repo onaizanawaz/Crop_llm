@@ -1,0 +1,1484 @@
+/* Design tokens. Every colour in the app comes from here so both themes
+   resolve as a set -- see the Phase 8 plan. The stress triad is the
+   classifier's own semantics, not decoration, and is shared with the map. */
+
+:root {
+  /* Tells the browser which way its own widgets should render: the date
+     pickers on New analysis, scrollbars, and the form controls' inner chrome.
+     Without it those stayed light-on-light in dark mode. */
+  color-scheme: light;
+  accent-color: #0f6157;
+
+  --paper: #f7f8f5;
+  --surface: #ffffff;
+  --surface-2: #f1f4f1;
+  --ink: #141e1c;
+  --ink-2: #3c4a47;
+  /* 4.62:1 on --paper. The old #6b7a76 measured 4.22 and failed AA, which
+     matters because every timestamp, hint and meta line in the app uses it. */
+  --ink-3: #5e6d69;
+  --rule: #dbe2dd;
+  --rule-strong: #c2cdc7;
+  --accent: #0f6157;
+  --accent-ink: #0b4a42;
+  --accent-soft: #e2eeea;
+  --on-accent: #ffffff;
+
+  /* The stress triad, as fills: map polygons, bars, dots, left edges. These
+     are the classifier's own semantics and are shared with the map. */
+  --healthy: #3f8f5b;
+  --moderate: #c08322;
+  --severe: #ad4530;
+  /* The same three as *text*. The fills are tuned for saturation against
+     imagery and measure 3.97 and 3.23 on a card -- below the 4.5 AA needs for
+     a pill or a sentence, so type uses these darker twins instead. */
+  --healthy-ink: #2d6f44;
+  --moderate-ink: #8a5c12;
+  --severe-ink: #a03f2c;
+
+  --shadow: 0 1px 2px rgba(20, 30, 28, 0.05), 0 8px 24px -16px rgba(20, 30, 28, 0.25);
+  --shadow-lift: 0 1px 2px rgba(20, 30, 28, 0.06), 0 14px 32px -20px rgba(20, 30, 28, 0.42);
+  --shadow-float: 0 1px 2px rgba(20, 30, 28, 0.05), 0 32px 64px -32px rgba(20, 30, 28, 0.35);
+  --radius: 4px;
+  --radius-sm: 2px;
+
+  /* One page rhythm, so every screen's gutters and stacks line up. */
+  --gap: 18px;
+  --page-max: 1080px;
+  --topbar-h: 56px;
+
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+  --font-display: Newsreader, Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    accent-color: #54c3af;
+    --paper: #0d1312;
+    --surface: #151d1b;
+    --surface-2: #1b2523;
+    --ink: #e9eeeb;
+    --ink-2: #b2c0bb;
+    --ink-3: #849390;
+    --rule: #25302d;
+    --rule-strong: #33403c;
+    --accent: #54c3af;
+    --accent-ink: #8cd9ca;
+    --accent-soft: #15302b;
+    --on-accent: #08201c;
+    --healthy: #63b67f;
+    --moderate: #dfa84a;
+    --severe: #d66e55;
+    --healthy-ink: #7cc795;
+    --moderate-ink: #e8b968;
+    --severe-ink: #e2846c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.8);
+    --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.45), 0 14px 32px -20px rgba(0, 0, 0, 0.9);
+    --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.5), 0 32px 64px -32px rgba(0, 0, 0, 0.95);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  accent-color: #54c3af;
+  --paper: #0d1312;
+  --surface: #151d1b;
+  --surface-2: #1b2523;
+  --ink: #e9eeeb;
+  --ink-2: #b2c0bb;
+  --ink-3: #849390;
+  --rule: #25302d;
+  --rule-strong: #33403c;
+  --accent: #54c3af;
+  --accent-ink: #8cd9ca;
+  --accent-soft: #15302b;
+  --on-accent: #08201c;
+  --healthy: #63b67f;
+  --moderate: #dfa84a;
+  --severe: #d66e55;
+  --healthy-ink: #7cc795;
+  --moderate-ink: #e8b968;
+  --severe-ink: #e2846c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.8);
+  --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.45), 0 14px 32px -20px rgba(0, 0, 0, 0.9);
+  --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.5), 0 32px 64px -32px rgba(0, 0, 0, 0.95);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Long ids and node types must never widen a column into a horizontal
+   scroll -- but only those. Applied to the whole body it also broke inside
+   ordinary values: a season read "2024-06-01 → 2024-09-" / "30". */
+.node-id, .node-name, .node-type, .who-email, .map-diag, .row-title {
+  overflow-wrap: break-word;
+}
+
+::selection { background: var(--accent-soft); color: var(--accent-ink); }
+
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Over imagery and blurred glass the accent ring alone can disappear, so
+   controls on the map get a second, paper-coloured ring behind it. */
+.map-overlay :focus-visible,
+.map-wrap :focus-visible {
+  outline-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--paper) 88%, transparent);
+}
+/* The app body is one long scroll behind a persistent topbar, so a keyboard
+   user needs a way past the nav on every page. */
+.skip-link {
+  position: absolute;
+  left: 12px; top: -48px;
+  z-index: 30;
+  padding: 9px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 13.5px;
+  text-decoration: none;
+  transition: top 140ms ease;
+}
+.skip-link:focus { top: 10px; }
+#main:focus { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  /* Two deliberate exceptions. A spinner that has stopped spinning reads as a
+     hung app rather than a working one, so it keeps turning -- slower, and as
+     the only moving thing on the screen. The skeleton loses its sweep and
+     stays a plain block, which says "not here yet" just as well. */
+  .spinner { animation: gf-spin 1.6s linear infinite !important; }
+  .skeleton { background: var(--surface-2); }
+  html { scroll-behavior: auto; }
+}
+
+/* Windows High Contrast and similar modes replace every colour, which would
+   otherwise flatten the state pills and the stress bars into one another. The
+   few marks whose colour *is* the information keep theirs; everything else
+   takes the system palette and relies on the borders below. */
+@media (forced-colors: active) {
+  .card, .pill, .chip, .btn, .segmented, .map-overlay { border: 1px solid ButtonBorder; }
+  :focus-visible { outline: 2px solid Highlight; }
+  .skeleton { background: Canvas; border: 1px solid GrayText; }
+  .stress-seg, .stress-dot, .report-mark, .progress-bar span, .brand-mark {
+    forced-color-adjust: none;
+  }
+  .row:hover { background: Highlight; color: HighlightText; }
+}
+
+/* A viewer who asks for more contrast gets firmer edges rather than a
+   different palette -- the hairline rules are the first thing to disappear. */
+@media (prefers-contrast: more) {
+  /* :root:root, not :root -- the dark-theme block is written as
+     :root:not([data-theme="light"]) and would otherwise outrank this and
+     leave the preference doing nothing in dark mode. */
+  :root:root {
+    --rule: var(--rule-strong);
+    --ink-2: var(--ink);
+    --ink-3: var(--ink-2);
+  }
+  .card, .field input, .field textarea, .field select { border-width: 1px; }
+  .pill { border-width: 1.5px; }
+}
+
+/* ---------- shared primitives ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  text-decoration: none;   /* the same class is used on router <Link>s */
+  white-space: nowrap;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease,
+              transform 90ms ease;
+}
+.btn:hover:not(:disabled) { background: var(--accent-ink); border-color: var(--accent-ink); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover:not(:disabled) { background: var(--accent-soft); }
+
+.btn.quiet {
+  background: transparent; color: var(--ink-2); border-color: var(--rule-strong);
+}
+.btn.quiet:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); }
+
+.btn.sm { padding: 4px 10px; font-size: 12.5px; }
+.btn.block { width: 100%; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.field input, .field textarea, .field select {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+/* Full strength, not a faded one: at 0.7 the placeholder measured about 3.6:1
+   and failed AA, and a hint you cannot read is not a hint. */
+.field input::placeholder, .field textarea::placeholder {
+  color: var(--ink-3);
+  opacity: 1;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.field textarea { resize: vertical; min-height: 68px; }
+/* :user-invalid, not :invalid -- the latter marks a required field red before
+   it has been touched, which scolds someone for not having typed yet. */
+.field input:user-invalid, .field textarea:user-invalid {
+  border-color: var(--severe);
+}
+.field input:user-invalid:focus, .field textarea:user-invalid:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--severe) 18%, transparent);
+}
+/* Guidance under a control: same voice everywhere it appears. The bare class
+   matters as much as the nested one -- several hints sit beside a field rather
+   than inside it, and those were rendering at full body size. */
+.hint, .field .hint {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.mono { font-family: var(--font-mono); }
+.num { font-variant-numeric: tabular-nums; }
+
+.error {
+  background: color-mix(in srgb, var(--severe) 10%, transparent);
+  border-left: 3px solid var(--severe);
+  padding: 10px 14px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+/* Run and node state, encoded in form as well as text. */
+.pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.pill.done    { color: var(--healthy-ink); }
+.pill.running { color: var(--accent); }
+.pill.queued,
+.pill.pending { color: var(--ink-3); }
+.pill.failed  { color: var(--severe-ink); }
+.pill.skipped { color: var(--moderate-ink); }
+.pill.cancelled { color: var(--ink-3); }
+.pill.draft   { color: var(--ink-3); }
+/* Planning happens before a run exists, so it gets the working colour too. */
+.pill.planning { color: var(--accent); }
+.pill.plan_failed { color: var(--severe-ink); }
+.pill.ready { color: var(--ink-2); }
+
+/* A pill that also carries a dot, so state reads at a glance in a dense list.
+   The dot pulses only while the run is genuinely in motion. */
+.pill.dot::before {
+  content: "";
+  display: inline-block;
+  width: 5px; height: 5px;
+  margin-right: 6px;
+  vertical-align: 1px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pill.running.dot::before,
+.pill.planning.dot::before { animation: gf-pulse 1.4s ease-in-out infinite; }
+@keyframes gf-pulse { 50% { opacity: 0.25; } }
+
+/* ---------- app chrome ---------- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  /* Without this the topbar's nowrap contents set a floor on the page width,
+     and a phone renders the whole app zoomed out to fit ~543px. */
+  min-width: 0;
+  height: var(--topbar-h);
+  flex-shrink: 0;
+  padding: 0 20px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+  z-index: 5;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  width: 9px; height: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  /* Narrow screens scroll the nav rather than widening the page. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav a { flex-shrink: 0; white-space: nowrap; }
+/* The mirror of .compact-hide: shown only where space is tight. */
+.compact-only { display: none; }
+@media (max-width: 860px) { .compact-only { display: inline; } }
+.nav a {
+  position: relative;
+  font-size: 14px;
+  padding: 7px 12px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink-2);
+  transition: color 140ms ease, background 140ms ease;
+}
+.nav a:hover { color: var(--ink); background: var(--surface-2); }
+.nav a.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.topbar-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.who { text-align: right; line-height: 1.25; min-width: 0; }
+.who-org { font-size: 13px; font-weight: 500; }
+.who-email {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* scrollbar-gutter keeps the column width identical whether a page scrolls or
+   not, so moving between Workflows and Nodes no longer nudges the layout. */
+.app-body { flex: 1; min-height: 0; overflow: auto; scrollbar-gutter: stable; }
+
+.signout-icon { display: none; }
+@media (max-width: 860px) {
+  .signout { padding: 0; width: 36px; height: 36px; }
+  .signout-icon { display: block; }
+}
+
+/* With the dock open there is room for both on a wide screen, so the page
+   steps aside rather than hiding under it. Narrower than this the dock is a
+   full-height overlay and the page stays put. */
+@media (min-width: 1180px) {
+  .app[data-dock="open"] .app-body { padding-right: 420px; }
+}
+
+@media (max-width: 860px) {
+  .topbar { gap: 10px; padding: 0 12px; }
+  .who { display: none; }
+  .nav { gap: 0; }
+  .nav a { padding: 9px 10px; font-size: 13.5px; }
+  /* Anything that is only a label on desktop becomes an icon here, so the row
+     fits a 360px screen without the page widening under it. */
+  .compact-hide { display: none; }
+  .nav a { white-space: nowrap; }
+  .btn.icon-sm {
+    padding: 0;
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+  }
+  .avatar { width: 34px; height: 34px; }
+}
+
+/* Touch targets: the WCAG-comfortable floor is ~36-44px, and several controls
+   here were 29px tall. Only raised where a finger is the pointer, so the dense
+   desktop layout is unaffected. */
+/* Below ~430px the three nav items plus the account controls need the last
+   few pixels back, or "Nodes" ends up clipped by the Assistant button. */
+@media (max-width: 430px) {
+  .topbar { gap: 8px; padding: 0 10px; }
+  .nav a { padding: 9px 7px; font-size: 13px; }
+  .brand { font-size: 17px; gap: 7px; }
+}
+
+@media (pointer: coarse) {
+  .btn { min-height: 40px; }
+  .btn.sm { min-height: 36px; }
+  .nav a { min-height: 40px; display: inline-flex; align-items: center; }
+  .basemaps button, .mapmodes button { min-height: 36px; }
+}
+
+/* ---------- page furniture ---------- */
+
+.page {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 34px 22px 64px;
+}
+.page.narrow { max-width: 940px; }
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.page-head > div { min-width: 0; }
+/* A button reads as the counterweight to the title and belongs on its
+   baseline; a count chip is a caption and belongs at the top, next to the
+   thing it counts, rather than floating halfway down beside the lede. */
+.page-head > .chip { align-self: flex-start; margin-top: 4px; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 7px;
+}
+
+/* Fluid between the phone and desktop sizes rather than snapping at one
+   breakpoint: a workflow's question is the title here, and its length is
+   whatever the user typed. */
+h1.title, .title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(24px, 1.4vw + 19px, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin: 0 0 4px;
+  /* Evens the rag instead of leaving one orphaned word on the last line. */
+  text-wrap: balance;
+}
+/* A page title that shares its row with an action, or sits in a 358px
+   sidebar. Still fluid, just a narrower band -- these were hard-coded inline
+   at 24 and 26px, which ignored the viewport entirely. */
+h1.title.compact, .title.compact {
+  font-size: clamp(21px, 1vw + 17px, 26px);
+}
+
+h2.subhead, .subhead {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(17px, 0.5vw + 15px, 19px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  text-wrap: balance;
+}
+.lede {
+  color: var(--ink-2);
+  font-size: 14px;
+  margin: 0;
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+
+/* Small mono facts under a title -- dates, counts, ids. */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin: 0;
+}
+.meta .sep { opacity: 0.5; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.chip.accent {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+
+@media (max-width: 620px) {
+  .page { padding: 24px 16px 56px; }
+  .page-head { flex-direction: column; align-items: stretch; }
+  h1.title, .title { font-size: 25px; }
+}
+
+/* ---------- lists ---------- */
+
+.list { overflow: hidden; }
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  text-decoration: none;
+  color: inherit;
+  border-top: 1px solid var(--rule);
+  transition: background 120ms ease;
+}
+.row:first-child { border-top: 0; }
+.row:hover { background: var(--surface-2); }
+.row-main { flex: 1; min-width: 0; }
+.row-title {
+  font-size: 15px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Long questions are the norm here, and one clipped line often cut them
+   mid-clause. Two lines carry almost all of them whole. */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+}
+.row { min-height: 64px; }
+.row-sub time { color: inherit; }
+.row-sub { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-3); }
+/* Affordance, not decoration: it is the only cue the row navigates. */
+.row-go {
+  color: var(--ink-3);
+  flex-shrink: 0;
+  transition: transform 140ms ease, color 140ms ease;
+}
+.row:hover .row-go { transform: translateX(2px); color: var(--accent); }
+
+/* ---------- empty and loading states ---------- */
+
+.empty {
+  padding: 48px 32px;
+  text-align: center;
+}
+.empty-title { margin: 0 0 6px; font-size: 16px; font-weight: 500; }
+.empty-text {
+  text-wrap: pretty;
+  color: var(--ink-2);
+  margin: 0 auto 18px;
+  font-size: 14px;
+  max-width: 42ch;
+}
+
+/* Skeletons mirror the real row heights so nothing jumps when data lands. */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    color-mix(in srgb, var(--rule) 60%, var(--surface-2)) 37%,
+    var(--surface-2) 63%
+  );
+  background-size: 400% 100%;
+  animation: gf-shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes gf-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+.spinner {
+  width: 13px; height: 13px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
+  animation: gf-spin 640ms linear infinite;
+}
+@keyframes gf-spin { to { transform: rotate(360deg); } }
+
+/* Full-window splash while the session is being restored. */
+.splash {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  align-content: center;
+  color: var(--ink-3);
+}
+
+/* ---------- node catalog ---------- */
+
+.node-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+.node-card {
+  padding: 16px 18px;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+.node-card:hover {
+  border-color: var(--rule-strong);
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-1px);
+}
+.node-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 5px;
+  word-break: break-word;
+}
+.node-desc {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+.io { display: grid; gap: 7px; }
+.io-row { display: flex; gap: 9px; align-items: baseline; }
+.io-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  width: 46px;
+  flex-shrink: 0;
+}
+.io-vals { display: flex; flex-wrap: wrap; gap: 5px; }
+.io-none { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+
+/* ---------- pipeline ---------- */
+
+.waves {
+  display: flex;
+  gap: 14px;
+  min-width: min-content;
+  align-items: flex-start;
+}
+/* Fixed width, not min-width: a node with a long error message used to
+   stretch its own column and leave the pipeline visibly ragged. */
+.wave { display: flex; flex-direction: column; gap: 10px; width: 230px; flex-shrink: 0; }
+.wave-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.wave-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.node {
+  padding: 11px 13px;
+  border-left: 2px solid var(--rule-strong);
+  transition: border-color 140ms ease;
+}
+.node-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.node-id { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+.node-type { font-size: 13.5px; font-weight: 500; word-break: break-word; }
+.node-err {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--severe-ink);
+}
+/* State is carried by the left edge as well as the pill -- colour alone is
+   never the only signal. */
+.node.done    { border-left-color: var(--healthy); }
+.node.running { border-left-color: var(--accent); }
+.node.failed  { border-left-color: var(--severe); }
+.node.skipped { border-left-color: var(--moderate); }
+
+/* ---------- run progress ---------- */
+
+.progress { display: flex; align-items: center; gap: 12px; }
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+.progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 400ms ease;
+}
+.progress-text { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
+
+/* ---------- setup split (map beside a form) ---------- */
+
+.split { display: flex; height: 100%; min-height: 0; }
+.split-main { flex: 1; min-width: 0; }
+
+.side {
+  width: 358px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--rule);
+}
+.side-head { padding: 22px 22px 16px; border-bottom: 1px solid var(--rule); }
+.side-scroll { flex: 1; min-height: 0; overflow: auto; padding: 4px 22px 22px; }
+.side-foot {
+  padding: 16px 22px;
+  border-top: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.step { padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.step:last-child { border-bottom: 0; }
+.step-head { display: flex; align-items: center; gap: 9px; margin-bottom: 11px; }
+.step-n {
+  display: grid;
+  place-items: center;
+  width: 20px; height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.step-n[data-done="true"] {
+  border-color: var(--healthy);
+  background: color-mix(in srgb, var(--healthy) 14%, transparent);
+  color: var(--healthy);
+}
+.step-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+/* Flush with the step header, not indented under it. An indent here looked
+   tidier in isolation but stole 29px from a 358px sidebar and pushed the "To"
+   date 23px past the edge, where it was clipped. */
+.step-body { padding-left: 0; }
+
+/* The two date fields share a row until they cannot: below about 300px of
+   sidebar they stack rather than overflow. */
+.date-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.date-row > .field { flex: 1 1 130px; min-width: 0; }
+/* The step header already names the control, so its own label is for AT only. */
+.sr-label {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.aoi-ok {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 11px;
+  font-size: 13.5px;
+  border: 1px solid color-mix(in srgb, var(--healthy) 45%, var(--rule));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--healthy) 8%, transparent);
+}
+.aoi-tick { color: var(--healthy-ink); }
+
+@media (max-width: 860px) {
+  .split { flex-direction: column; height: auto; }
+  .side { width: 100%; border-right: 0; border-bottom: 1px solid var(--rule); }
+  .side-scroll { overflow: visible; }
+  /* An explicit height, not min-height: the map inside is height:100%, which
+     resolves to zero against an auto-height parent -- so on a phone the map
+     silently disappeared and the field could not be drawn at all. */
+  .split-main { height: 68vh; min-height: 360px; }
+  .split-main .map-wrap { height: 100%; }
+}
+
+/* ---------- map overlays ---------- */
+
+.map-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.map-overlay {
+  position: absolute;
+  z-index: 2;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.map-hint {
+  top: 12px; left: 12px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.map-hint::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--moderate);
+  animation: gf-pulse 1.4s ease-in-out infinite;
+}
+.map-diag {
+  top: 12px; right: 56px;
+  padding: 8px 11px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.6;
+  max-width: 230px;
+  word-break: break-all;
+  z-index: 4;
+}
+.map-error {
+  bottom: 12px; left: 12px; right: 12px;
+  border-left: 3px solid var(--severe);
+  padding: 10px 14px;
+  color: var(--ink);
+  z-index: 3;
+}
+.basemaps {
+  display: flex;
+  padding: 3px;
+  gap: 2px;
+}
+.basemaps button {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 11px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.basemaps button:hover { color: var(--ink); background: var(--surface-2); }
+.basemaps button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- segmented control ---------- */
+
+.segmented {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.segmented-thumb {
+  position: absolute;
+  top: 3px; bottom: 3px;
+  width: calc(50% - 4px);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  transition: transform 180ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.segmented-thumb[data-at="0"] { transform: translateX(3px); }
+.segmented-thumb[data-at="1"] { transform: translateX(calc(100% + 5px)); }
+.segmented button {
+  position: relative;
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color 140ms ease;
+}
+.segmented button[data-on="true"] { color: var(--ink); }
+.segmented button[data-on="false"]:hover { color: var(--ink-2); }
+
+/* ---------- sign in ---------- */
+
+.login-page {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+}
+/* A faint survey grid under an accent wash: the only decorative surface in
+   the app, and it stays behind the card. */
+.login-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 55% at 50% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+    linear-gradient(var(--rule) 1px, transparent 1px) 0 0 / 100% 34px,
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px) 0 0 / 34px 100%;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 32%, #000, transparent 75%);
+  mask-image: radial-gradient(70% 60% at 50% 32%, #000, transparent 75%);
+  pointer-events: none;
+}
+
+.login-card {
+  position: relative;
+  width: 100%;
+  max-width: 408px;
+  padding: 36px 34px 26px;
+  box-shadow: var(--shadow-float);
+}
+.login-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px -1px auto;
+  height: 2px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.75;
+}
+.login-head { margin-bottom: 22px; }
+.login-head .eyebrow { display: flex; align-items: center; gap: 7px; }
+.login-card .segmented { margin-bottom: 22px; }
+.login-form { display: flex; flex-direction: column; gap: 16px; }
+.login-form .btn { margin-top: 2px; padding: 11px 16px; }
+
+.login-foot {
+  margin: 22px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  text-align: center;
+}
+.linkish {
+  font: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.linkish:hover { color: var(--accent-ink); }
+
+@media (max-width: 460px) {
+  .login-card { padding: 28px 22px 20px; }
+}
+
+/* ---------- map: mode switch, notes, and the Cesium container ---------- */
+
+/* The map's bottom-left control row: viewpoint first, then imagery. Flex
+   lays them out, so neither can end up under the other at any width. The row
+   itself is not an overlay -- each switcher keeps its own glass panel. */
+.map-controls {
+  position: absolute;
+  bottom: 34px; left: 12px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+}
+.map-controls .map-overlay { position: static; }
+.mapmodes {
+  display: flex;
+  padding: 3px;
+  gap: 2px;
+}
+.mapmodes button {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.mapmodes button:hover { color: var(--ink); background: var(--surface-2); }
+.mapmodes button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* A standing condition, not a failure: quieter than .map-error on purpose. */
+/* Top-right, not bottom-right: the bottom-right corner belongs to the
+   floating Ask button, which covered this note. (3D has no zoom control up
+   here -- Cesium's widgets are off -- so the corner is free.) */
+.map-note {
+  top: 12px; right: 12px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  max-width: 260px;
+}
+.map-note code { font-family: var(--font-mono); font-size: 10.5px; }
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: var(--ink-3);
+  font-size: 13px;
+  background: var(--surface-2);
+}
+
+/* Cesium paints its own black ground; give it the app's surface instead so a
+   still-loading globe does not flash a black rectangle into the layout. */
+.cesium-holder { background: var(--surface-2); }
+.cesium-holder .cesium-viewer,
+.cesium-holder .cesium-widget,
+.cesium-holder .cesium-widget canvas { background: transparent; }
+.cesium-holder .cesium-viewer-bottom {
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+/* Cesium's credit line is a licence condition, so it stays -- but it must not
+   sit under the basemap switcher. */
+.cesium-holder .cesium-credit-lightbox-overlay { z-index: 6; }
+.cesium-holder .cesium-widget-credits {
+  color: var(--ink-3);
+  text-shadow: none;
+}
+
+/* ---------- assistant ---------- */
+
+.assistant-spark {
+  width: 7px; height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.ask-btn { gap: 8px; }
+
+.assistant {
+  position: fixed;
+  top: var(--topbar-h); right: 0; bottom: 0;
+  z-index: 20;
+  width: 420px;
+  max-width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--rule);
+  box-shadow: var(--shadow-float);
+}
+
+.assistant-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.assistant-sub { font-size: 10.5px; color: var(--ink-3); letter-spacing: 0.06em; }
+
+.assistant-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.assistant-intro { color: var(--ink-2); font-size: 13.5px; }
+.assistant-intro p { margin: 0 0 14px; }
+.assistant-suggest { display: flex; flex-wrap: wrap; gap: 6px; }
+.assistant-suggest .chip {
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  white-space: normal;
+  text-align: left;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.assistant-suggest .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+.msg { font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; }
+.msg.user {
+  align-self: flex-end;
+  max-width: 88%;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.msg.answer { color: var(--ink); }
+.msg.note { font-size: 11px; color: var(--ink-3); }
+
+/* The trace: one line per action, so the user can see exactly what was done
+   to their data and in what order. */
+.tool-call {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border-left: 2px solid var(--rule-strong);
+  color: var(--ink-2);
+}
+.tool-call.ok { border-left-color: var(--healthy); }
+.tool-call.error { border-left-color: var(--severe); color: var(--severe); }
+.tool-call.running { border-left-color: var(--accent); }
+.tool-dot {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  flex-shrink: 0;
+  color: inherit;
+}
+.tool-call.ok .tool-dot { color: var(--healthy); }
+.tool-name { font-size: 11.5px; color: var(--ink); }
+.tool-detail {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  text-align: right;
+}
+.tool-call.error .tool-detail { color: var(--severe); }
+
+.report { padding: 14px 16px; display: grid; gap: 14px; }
+.report-group { display: grid; gap: 6px; }
+.report-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.report-line {
+  display: flex;
+  gap: 9px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+/* Severity as a bar, not only as a colour word: the same triad the map uses. */
+.report-mark {
+  width: 3px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  margin: 3px 0;
+}
+
+.assistant-busy {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.assistant-composer {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 12px 16px;
+  border-top: 1px solid var(--rule);
+  background: var(--surface);
+}
+.assistant-composer textarea {
+  flex: 1;
+  font: inherit;
+  font-size: 13.5px;
+  padding: 9px 11px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  resize: none;
+}
+.assistant-composer textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+@media (max-width: 620px) {
+  .assistant { top: 0; width: 100vw; }
+  /* On a narrow map the attribution wraps to two lines and covered these, so
+     the controls move to the top edge -- but to the *left* of it. Top-right is
+     MapLibre's own zoom stack, and the 2D/3D switch was landing on top of the
+     "+" button, which could then not be tapped at all. The drawing hint moves
+     to the bottom at this width, so the left corner is free. */
+  .map-controls {
+    top: 10px; left: 10px; bottom: auto; right: auto;
+    justify-content: flex-start;
+    max-width: calc(100% - 66px);   /* clear of the zoom stack */
+  }
+  .map-hint { top: auto; bottom: 52px; left: 10px; right: 10px; }
+  .map-note { top: auto; bottom: 52px; left: 10px; right: 10px; max-width: none; }
+}
+
+
+/* ---------- analysis page: locator + facts + results ---------- */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+.map-card { overflow: hidden; height: 240px; }
+.run-facts { padding: 16px 18px; }
+.run-facts .report-label { margin: 0 0 12px; }
+
+/* A definition list, because that is what these are: label/value pairs the
+   eye scans down rather than reads. */
+.facts { margin: 0; display: grid; gap: 9px; }
+/* Wraps the whole row onto a second line before it will split a value: a
+   date is one thing to read, not two. */
+.facts > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+}
+.facts dt {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.facts dd {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink);
+  text-align: right;
+  min-width: 0;
+  margin-left: auto;   /* stays right-aligned once the row wraps */
+}
+
+.results-section { margin-bottom: 30px; }
+
+@media (max-width: 860px) {
+  .detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .map-card { height: 220px; }
+}
+
+/* ---------- the stress report ---------- */
+
+.report { padding: 16px 18px; display: grid; gap: 18px; }
+
+/* The one sentence someone reads if they read nothing else. */
+.report-headline {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--rule-strong);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.report-group { display: grid; gap: 8px; }
+.report-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.report-line {
+  display: flex;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+/* Severity as a bar as well as a colour: the triad is the classifier's own
+   semantics, and colour alone is never the only signal. */
+.report-mark {
+  width: 3px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  margin: 4px 0;
+}
+
+.stress-bar-wrap { display: grid; gap: 12px; }
+.stress-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.stress-seg { display: block; height: 100%; }
+.stress-seg + .stress-seg {
+  box-shadow: inset 1px 0 0 color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.stress-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.stress-legend li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+.stress-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  transform: translateY(1px);
+}
+.stress-legend-label { color: var(--ink); min-width: 0; }
+.stress-legend-num { font-size: 12.5px; font-weight: 500; }
+.stress-legend-area { font-size: 12px; color: var(--ink-3); }
+
+/* Shown only while a lazily-loaded route's chunk is in flight. Centred in the
+   content area, below the topbar, which stays where it is. */
+.route-loading {
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+  color: var(--accent);
+}
